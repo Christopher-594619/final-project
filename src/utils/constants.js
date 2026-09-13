@@ -14,6 +14,7 @@ export const SUBJECTS = [
   'Art',
   'Engineering',
   'Programming',
+  "Software engineering"
 ];
 
 export const LEVELS = [
@@ -45,11 +46,12 @@ export const PRICE_RANGES = [
 ];
 
 export const DISTANCE_OPTIONS = [
-  { value: 1, label: 'Within 1 mile' },
-  { value: 3, label: 'Within 3 miles' },
-  { value: 5, label: 'Within 5 miles' },
-  { value: 10, label: 'Within 10 miles' },
-  { value: 20, label: 'Within 20 miles' },
+  { value: 0, label: 'Within 0.1 KM' },
+  { value: 1, label: 'Within 1 KM' },
+  { value: 3, label: 'Within 3 KM' },
+  { value: 5, label: 'Within 5 KM' },
+  { value: 10, label: 'Within 10 KM' },
+  { value: 20, label: 'Within 20 KM' },
   { value: 0, label: 'Any distance' },
 ];
 

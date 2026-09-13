@@ -10,6 +10,7 @@ import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
 import ForgotPassword from '../pages/Auth/ForgotPassword';
 import Messages from '../pages/Messages/Messages';
+import BecomeTutor from '../pages/StudentDashboard/components/BecomeTutor';
 
 export const routes = [
   {
@@ -59,6 +60,14 @@ export const routes = [
     element: (
       <DashboardLayout>
         <StudentDashboard />
+      </DashboardLayout>
+    ),
+  },
+  {
+    path: '/dashboard/student/become-tutor',
+    element: (
+      <DashboardLayout>
+        <BecomeTutor />
       </DashboardLayout>
     ),
   },

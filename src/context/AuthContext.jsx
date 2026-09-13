@@ -116,6 +116,7 @@ export const AuthProvider = ({ children }) => {
             setIsLoggedIn(false);
             return null;
         }
+        setUser(data.user);
 
         setProfile(data.user?.profile);
         return data.user;
@@ -151,7 +152,6 @@ export const AuthProvider = ({ children }) => {
             setAccessToken(data.accessToken);
 
             const decoded = decodeAccessToken(data.accessToken);
-            setUser(decoded);
             setIsLoggedIn(true);
 
             await fetchUser(data.accessToken);
@@ -199,7 +199,6 @@ export const AuthProvider = ({ children }) => {
             const decoded = decodeAccessToken(token);
 
             setAccessToken(token);
-            setUser(decoded);
             setIsLoggedIn(true);
 
             // IMPORTANT: pass token directly

@@ -126,7 +126,7 @@ const SearchFilters = ({ filters, onFilterChange, onClear }) => {
           ))}
         </div>
       </FilterSection>
-
+{/* 
       <FilterSection title="Distance" section="distance">
         <select
           value={filters.distance}
@@ -139,7 +139,7 @@ const SearchFilters = ({ filters, onFilterChange, onClear }) => {
             </option>
           ))}
         </select>
-      </FilterSection>
+      </FilterSection> */}
 
       <FilterSection title="Price Range" section="price">
         <div className="space-y-3">

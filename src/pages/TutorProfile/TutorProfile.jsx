@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { useTutors } from '../../hooks/useTutors';
 import { useAuth } from '../../context/AuthContext';
 import ProfileHeader from './components/ProfileHeader';
 import ProfileInfo from './components/ProfileInfo';
@@ -14,7 +13,6 @@ const TutorProfile = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { getTutorById } = useTutors();
   const [tutor, setTutor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showBookingModal, setShowBookingModal] = useState(false);

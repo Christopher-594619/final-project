@@ -2,7 +2,7 @@ export const formatters = {
   currency: (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'ZMW',
       minimumFractionDigits: 0,
     }).format(amount);
   },
@@ -27,11 +27,12 @@ export const formatters = {
     }).format(new Date(`2000-01-01T${time}`));
   },
 
-  distance: (miles) => {
-    if (miles < 1) {
-      return `${Math.round(miles * 5280)} ft`;
+  distance: (km) => {
+    if (km == null || isNaN(km)) return '';
+    if (km < 1) {
+      return `${Math.round(km * 1000)} m`;
     }
-    return `${miles.toFixed(1)} miles`;
+    return `${km.toFixed(1)} km`;
   },
 
   rating: (rating) => {

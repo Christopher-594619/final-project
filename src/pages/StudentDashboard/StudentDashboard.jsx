@@ -1,6 +1,5 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useTutors } from '../../hooks/useTutors';
 import { useNotification } from '../../hooks/useNotification';
 import { FaCalendarAlt, FaHeart, FaSearch, FaBell, FaBookOpen } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -10,8 +9,9 @@ import StatsCard from '../../components/dashboard/StatsCard';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
-  const { favorites } = useTutors();
   const { notifications } = useNotification();
+
+  const favorites = [0]
 
   const stats = [
     {
@@ -22,7 +22,7 @@ const StudentDashboard = () => {
     },
     {
       title: 'Saved Tutors',
-      value: favorites.length,
+      value: 10,
       icon: FaHeart,
       color: 'text-red-600 bg-red-100',
     },
@@ -105,9 +105,9 @@ const StudentDashboard = () => {
             <FaHeart className="text-red-500" />
             Saved Tutors
           </h2>
-          {favorites.length > 0 ? (
+          {favorites?.length > 0 ? (
             <div className="space-y-2">
-              {favorites.slice(0, 3).map((tutorId) => (
+              {favorites?.slice(0, 3).map((tutorId) => (
                 <div key={tutorId} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg transition-colors">
                   <span className="text-sm text-gray-700">Tutor #{tutorId}</span>
                   <Link to={`/tutor/${tutorId}`} className="text-xs text-primary-600 hover:text-primary-700">
@@ -115,7 +115,7 @@ const StudentDashboard = () => {
                   </Link>
                 </div>
               ))}
-              {favorites.length > 3 && (
+              {favorites?.length > 3 && (
                 <Link to="/dashboard/student/saved" className="text-sm text-primary-600 hover:text-primary-700 block text-center">
                   View all saved tutors
                 </Link>

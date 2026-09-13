@@ -19,10 +19,11 @@ const DashboardLayout = ({ children }) => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <DashboardSidebar userType={user.type} />
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6 md:p-8 max-w-7xl mx-auto">
+    <div className="flex h-screen w-full min-w-0 overflow-hidden bg-gray-50">
+      <DashboardSidebar userType={user.role} />
+
+      <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
+        <div className="w-full max-w-7xl mx-auto p-6 md:p-8">
           {children}
         </div>
       </div>
