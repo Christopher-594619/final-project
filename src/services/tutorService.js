@@ -1,12 +1,10 @@
-// src/services/tutorService.js
-import { useAuth } from "../context/AuthContext";
 const API_URL = import.meta.env.VITE_ENDPOINT_URL;
 import { getUserLocation } from "../utils/location";
 
 // Helper to get auth token
 const getAuthHeaders = () => {
-  const {accessToken} = useAuth()
-  return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+  const token = localStorage.getItem("accessToken");
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
 // Helper for handling fetch responses

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaUserGraduate, FaLanguage, FaBriefcase, FaGraduationCap } from 'react-icons/fa';
+import { FaUserGraduate, FaLanguage, FaBriefcase, FaGraduationCap, FaMapMarkerAlt } from 'react-icons/fa';
 import SubjectTags from '../../../components/common/SubjectTags';
 
 const ProfileInfo = ({ tutor }) => {
