@@ -93,14 +93,7 @@ const TutorProfile = () => {
           <ProfileInfo tutor={tutor} />
 
           {/* Reviews Section */}
-          <ReviewsSection 
-            reviews={tutor.reviews || []} 
-            tutorId={tutor.id}
-            onReviewAdded={() => {
-              // Refresh reviews
-              tutorService.getTutorById(id).then(setTutor);
-            }}
-          />
+          <ReviewsSection tutorId={tutor.userId} />
         </div>
       </div>
 

@@ -5,8 +5,10 @@ import { FaTimes, FaCalendarAlt, FaClock } from 'react-icons/fa';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
+const BASE_URL = import.meta.env.VITE_ENDPOINT_URL;
+
 const BookingModal = ({ isOpen, onClose, tutor }) => {
-  const { user } = useAuth();
+  const { user, getValidAccessToken } = useAuth();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
@@ -28,38 +30,62 @@ const BookingModal = ({ isOpen, onClose, tutor }) => {
     { value: '120', label: '2 hours' },
   ];
 
-  const handleSubmit = (e) => {
+  const resetForm = () => {
+    setSelectedDate('');
+    setSelectedTime('');
+    setSelectedDuration('60');
+    setNotes('');
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!user) {
       toast.error('Please login to book a session');
       navigate('/login');
       return;
     }
-
     if (!selectedDate) {
       toast.error('Please select a date');
       return;
     }
-
     if (!selectedTime) {
       toast.error('Please select a time');
       return;
     }
 
     setIsSubmitting(true);
+    try {
+      const token = await getValidAccessToken();
+      const res = await fetch(`${BASE_URL}/api/bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          // tutor.id is the tutor_profiles id — the backend needs the
+          // underlying user id (tutor.userId) to match it against users/bookings.
+          tutor_id: tutor.userId,
+          rate: tutor.price,
+        }),
+      });
+      const data = await res.json();
 
-    // Simulate booking
-    setTimeout(() => {
-      toast.success(`Booking confirmed with ${tutor.name}!`);
-      setIsSubmitting(false);
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Could not create booking.');
+      }
+
+      toast.success(
+        `Booking request sent to ${tutor.name}! You'll be able to pay once they confirm.`
+      );
+      resetForm();
       onClose();
-      // Reset form
-      setSelectedDate('');
-      setSelectedTime('');
-      setSelectedDuration('60');
-      setNotes('');
-    }, 1500);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -93,8 +119,8 @@ const BookingModal = ({ isOpen, onClose, tutor }) => {
               </div>
               <div>
                 <p className="font-semibold text-gray-900">{tutor.name}</p>
-                <p className="text-sm text-gray-500">{tutor.subjects.slice(0, 3).join(', ')}</p>
-                <p className="text-sm font-medium text-gray-900">${tutor.price}/hour</p>
+                <p className="text-sm text-gray-500">{tutor.subjects?.slice(0, 3).join(', ')}</p>
+                <p className="text-sm font-medium text-gray-900">K{tutor.price}/hour</p>
               </div>
             </div>
 
@@ -176,7 +202,7 @@ const BookingModal = ({ isOpen, onClose, tutor }) => {
             <div className="bg-gray-50 rounded-xl p-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Hourly rate</span>
-                <span className="font-medium">${tutor.price}/hour</span>
+                <span className="font-medium">K{tutor.price}/hour</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Duration</span>
@@ -185,7 +211,7 @@ const BookingModal = ({ isOpen, onClose, tutor }) => {
               <div className="border-t border-gray-200 pt-2 flex justify-between font-medium">
                 <span>Total</span>
                 <span className="text-primary-600">
-                  ${(tutor.price * parseInt(selectedDuration) / 60).toFixed(2)}
+                  K{(tutor.price * parseInt(selectedDuration) / 60).toFixed(2)}
                 </span>
               </div>
             </div>

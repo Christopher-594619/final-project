@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import ReviewCard from '../../../components/common/ReviewCard';
 import RatingStars from '../../../components/common/RatingStars';
@@ -7,20 +7,47 @@ import { FaStar, FaRegStar } from 'react-icons/fa';
 import { reviewService } from '../../../services/reviewService';
 import toast from 'react-hot-toast';
 
-const ReviewsSection = ({ reviews, tutorId, onReviewAdded }) => {
-  const { user } = useAuth();
+const ReviewsSection = ({ tutorId }) => {
+  const { user, getValidAccessToken } = useAuth();
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [myReview, setMyReview] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const averageRating = reviews.length > 0 
-    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length 
-    : 0;
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await reviewService.getReviews(tutorId);
+      setReviews(data.reviews);
+      setAverageRating(data.averageRating);
 
-  const ratingDistribution = [5, 4, 3, 2, 1].map(star => {
-    const count = reviews.filter(r => Math.floor(r.rating) === star).length;
+      if (user) {
+        const token = await getValidAccessToken();
+        const mine = await reviewService.getMyReview(tutorId, token);
+        setMyReview(mine);
+        if (mine) {
+          setRating(mine.rating);
+          setComment(mine.content);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading reviews:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [tutorId, user, getValidAccessToken]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const ratingDistribution = [5, 4, 3, 2, 1].map((star) => {
+    const count = reviews.filter((r) => Math.floor(r.rating) === star).length;
     const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
     return { star, count, percentage };
   });
@@ -30,12 +57,10 @@ const ReviewsSection = ({ reviews, tutorId, onReviewAdded }) => {
       toast.error('Please login to leave a review');
       return;
     }
-
     if (rating === 0) {
       toast.error('Please select a rating');
       return;
     }
-
     if (!comment.trim()) {
       toast.error('Please write a review comment');
       return;
@@ -43,25 +68,27 @@ const ReviewsSection = ({ reviews, tutorId, onReviewAdded }) => {
 
     setSubmitting(true);
     try {
-      await reviewService.addReview({
-        tutorId,
-        studentId: user.id,
-        studentName: user.name,
-        rating,
-        comment,
-        date: new Date().toISOString(),
-      });
-      toast.success('Review submitted successfully!');
-      setRating(0);
-      setComment('');
+      const token = await getValidAccessToken();
+      await reviewService.addReview({ tutorId, rating, comment }, token);
+      toast.success(myReview ? 'Review updated!' : 'Review submitted successfully!');
       setShowReviewForm(false);
-      onReviewAdded();
-    } catch (error) {
-      toast.error('Failed to submit review');
+      await load();
+    } catch (err) {
+      // Surfaces the backend's real reason, e.g. "You can only review a
+      // tutor after completing a paid session with them."
+      toast.error(err.message);
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl shadow-soft border border-gray-100 p-6">
+        <p className="text-sm text-gray-500">Loading reviews...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-soft border border-gray-100 p-6">
@@ -69,12 +96,12 @@ const ReviewsSection = ({ reviews, tutorId, onReviewAdded }) => {
         <h2 className="text-lg font-semibold text-gray-900">
           Reviews ({reviews.length})
         </h2>
-        {user && !reviews.some(r => r.studentId === user.id) && (
+        {user && (
           <button
             onClick={() => setShowReviewForm(!showReviewForm)}
             className="text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors"
           >
-            {showReviewForm ? 'Cancel' : 'Write a Review'}
+            {showReviewForm ? 'Cancel' : myReview ? 'Edit your review' : 'Write a Review'}
           </button>
         )}
       </div>
@@ -93,7 +120,7 @@ const ReviewsSection = ({ reviews, tutorId, onReviewAdded }) => {
                 <span className="text-sm text-gray-600 w-8">{star}</span>
                 <FaStar className="text-yellow-400 w-3 h-3" />
                 <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-yellow-400 rounded-full transition-all duration-500"
                     style={{ width: `${percentage}%` }}
                   ></div>
@@ -108,7 +135,12 @@ const ReviewsSection = ({ reviews, tutorId, onReviewAdded }) => {
       {/* Review Form */}
       {showReviewForm && (
         <div className="mb-8 p-4 border border-gray-200 rounded-xl bg-gray-50">
-          <h3 className="font-medium text-gray-900 mb-3">Write a Review</h3>
+          <h3 className="font-medium text-gray-900 mb-3">
+            {myReview ? 'Edit your review' : 'Write a Review'}
+          </h3>
+          <p className="text-xs text-gray-500 mb-3">
+            You can only review a tutor after completing a paid session with them.
+          </p>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
@@ -116,6 +148,7 @@ const ReviewsSection = ({ reviews, tutorId, onReviewAdded }) => {
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
+                    type="button"
                     onMouseEnter={() => setHoverRating(star)}
                     onMouseLeave={() => setHoverRating(0)}
                     onClick={() => setRating(star)}
@@ -149,7 +182,7 @@ const ReviewsSection = ({ reviews, tutorId, onReviewAdded }) => {
                 disabled={submitting}
                 className="btn-primary px-6 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Submitting...' : 'Submit Review'}
+                {submitting ? 'Submitting...' : myReview ? 'Update Review' : 'Submit Review'}
               </button>
               <button
                 onClick={() => setShowReviewForm(false)}
